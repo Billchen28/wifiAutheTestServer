@@ -13,20 +13,25 @@ package main;
             "encoding/json"
     )
 
-    var {
-        gNeedAuthe bool = true
-        gKey string = "0123456789abcdef"
-    }
+    var (
+        gNeedAuthe = true
+        gKey = "0123456789abcdef"
+    )
 	
     func say(w http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
 			result, _:= ioutil.ReadAll(req.Body)
 			req.Body.Close()
 			fmt.Printf("%s\n", result)
-            valueTable,_ := url.ParseQuery(result);
+            valueTable,_ := url.ParseQuery(string(result));
             params := valueTable["params"]
             if params != nil {
-                proceParams(params)
+                respont := proceParams(string(params[0]))
+                if respont != nil {
+                     w.Write(respont)
+                 } else {
+                    w.Write([]byte("proceParams fail."))
+                 }
             } else {
                 w.Write([]byte("params not FOUND."))
             }
@@ -43,7 +48,7 @@ package main;
          w.Write([]byte("not need Authe."))
     }
 
-    func reset()(w http.ResponseWriter, req *http.Request) {
+    func reset(w http.ResponseWriter, req *http.Request) {
         gNeedAuthe = true
         w.Write([]byte("reset finish."))
     }
@@ -51,13 +56,13 @@ package main;
     func networkcheck(w http.ResponseWriter, req *http.Request) {
         if gNeedAuthe {
             fmt.Println("networkcheck NeedAuthe")
-            http.Redirect(w, r, "http://m.qq.com", 302)
+            http.Redirect(w, req, "http://m.qq.com", 302)
         } else {
             normal(w, req);
         }  
     }
 
-    func proceParams(params string, w http.ResponseWriter) {
+    func proceParams(params string) []byte {
         data, _ := Base64URLDecode(params);
         if data != nil {
             desc := AesDecrypt(data, []byte(gKey))
@@ -84,10 +89,11 @@ package main;
                 }
                 session_id := m["session_id"]
                 if session_id != nil {
-                    w.Write(getResponeData(1, session_id, "http://m.qq.com"))
+                   return getResponeData(1, session_id.(int), "http://m.qq.com")
                 }
              }
         }
+        return nil
     }
 
     func getResponeData(api_code int, session_id int, ad_url string) []byte {
@@ -95,7 +101,8 @@ package main;
         result["api_code"] = api_code
         result["session_id"] = session_id
         result["ad_url"] = ad_url
-        crypted := AesEncrypt([]byte(result, gKey))
+        b, _ := json.Marshal(result)
+        crypted := AesEncrypt(string(b), gKey)
         return []byte(Base64UrlSafeEncode(crypted))
     }
 
