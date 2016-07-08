@@ -1,14 +1,15 @@
+
 package main;
     
     import (
         "net/http"
-		    "bytes"
-			"crypto/aes"
-			"crypto/cipher"
-			"encoding/base64"
-			"fmt"
-			"strings"
-			"io/ioutil"
+            "bytes"
+            "crypto/aes"
+            "crypto/cipher"
+            "encoding/base64"
+            "fmt"
+            "strings"
+            "io/ioutil"
             "net/url"
             "encoding/json"
     )
@@ -17,12 +18,12 @@ package main;
         gNeedAuthe = true
         gKey = "0123456789abcdef"
     )
-	
+    
     func say(w http.ResponseWriter, req *http.Request) {
-		if req.Method == "POST" {
-			result, _:= ioutil.ReadAll(req.Body)
-			req.Body.Close()
-			fmt.Printf("%s\n", result)
+        if req.Method == "POST" {
+            result, _:= ioutil.ReadAll(req.Body)
+            req.Body.Close()
+            fmt.Printf("%s\n", result)
             valueTable,_ := url.ParseQuery(string(result));
             params := valueTable["params"]
             if params != nil {
@@ -35,7 +36,7 @@ package main;
             } else {
                 w.Write([]byte("params not FOUND."))
             }
-		} else {
+        } else {
             w.Write([]byte("only support POST method."))
         }
     }
@@ -63,9 +64,13 @@ package main;
     }
 
     func proceParams(params string) []byte {
-        data, _ := Base64URLDecode(params);
+        data, _ := base64.StdEncoding.DecodeString(params)
+        fmt.Println(len(data))
         if data != nil {
             desc := AesDecrypt(data, []byte(gKey))
+            if desc != nil {
+                fmt.Println(string(desc))
+            }
              if desc != nil {
                 var f interface{}
                 json.Unmarshal(desc, &f)
@@ -114,7 +119,7 @@ package main;
         http.ListenAndServe(":8001", nil);
         select{};
     }
-	
+    
 func Base64URLDecode(data string) ([]byte, error) {
     var missing = (4 - len(data)%4) % 4
     data += strings.Repeat("=", missing)
@@ -141,7 +146,7 @@ func AesDecrypt(crypted, key []byte) []byte {
     origData := make([]byte, len(crypted))
     blockMode.CryptBlocks(origData, crypted)
     origData = PKCS5UnPadding(origData)
-    fmt.Println("source is :", origData, string(origData))
+//    fmt.Println("source is :", origData, string(origData))
     return origData
 }
 
@@ -233,3 +238,51 @@ func (x *ecbDecrypter) CryptBlocks(dst, src []byte) {
         dst = dst[x.blockSize:]
     }
 }
+
+
+
+// package main
+
+// import (
+// //    "encoding/json"
+//  "net/url"
+//     "fmt"
+// )
+
+// func main() {
+//  valueTable,_ := url.ParseQuery("params=abcdef&extra=123456");
+//  for k, v := range valueTable {
+//      fmt.Println(k, "=", v)
+//  }
+// }
+
+// func main() {    
+//  result := make(map[string]interface{})
+//  result["api_code"] = 1
+//  result["session_id"] = 123123
+//  result["ad_url"] = "http://m.qqq.com"
+//  b, _ := json.Marshal(result)
+//  fmt.Println(string(b))
+    
+//  var f interface{}
+//  json.Unmarshal(b, &f)
+//  m := f.(map[string]interface{})
+//  fmt.Println(m["group_id"])
+//  for k, v := range m {
+//     switch vv := v.(type) {
+//      case string:
+//          fmt.Println(k, "is string", vv)
+//      case int:
+//          fmt.Println(k, "is int", vv)
+//      case float64:
+//          fmt.Println(k,"is float64",vv)
+//      case []interface{}:
+//          fmt.Println(k, "is an array:")
+//          for i, u := range vv {
+//              fmt.Println(i, u)
+//          }
+//      default:
+//          fmt.Println(k, "is of a type I don't know how to handle")
+//      }
+//  }
+// }
