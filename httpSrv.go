@@ -8,7 +8,6 @@ package main;
             "crypto/cipher"
             "encoding/base64"
             "fmt"
-            "strings"
             "io/ioutil"
             "net/url"
             "encoding/json"
@@ -65,12 +64,8 @@ package main;
 
     func proceParams(params string) []byte {
         data, _ := base64.StdEncoding.DecodeString(params)
-        fmt.Println(len(data))
         if data != nil {
             desc := AesDecrypt(data, []byte(gKey))
-            if desc != nil {
-                fmt.Println(string(desc))
-            }
              if desc != nil {
                 var f interface{}
                 json.Unmarshal(desc, &f)
@@ -108,7 +103,7 @@ package main;
         result["ad_url"] = ad_url
         b, _ := json.Marshal(result)
         crypted := AesEncrypt(string(b), gKey)
-        return []byte(Base64UrlSafeEncode(crypted))
+        return []byte(base64.StdEncoding.EncodeToString(crypted))
     }
 
     func main() {
@@ -120,23 +115,6 @@ package main;
         select{};
     }
     
-func Base64URLDecode(data string) ([]byte, error) {
-    var missing = (4 - len(data)%4) % 4
-    data += strings.Repeat("=", missing)
-    res, err := base64.URLEncoding.DecodeString(data)
-    fmt.Println("  decodebase64urlsafe is :", string(res), err)
-    return base64.URLEncoding.DecodeString(data)
-}
-
-func Base64UrlSafeEncode(source []byte) string {
-    // Base64 Url Safe is the same as Base64 but does not contain '/' and '+' (replaced by '_' and '-') and trailing '=' are removed.
-    bytearr := base64.StdEncoding.EncodeToString(source)
-    safeurl := strings.Replace(string(bytearr), "/", "_", -1)
-    safeurl = strings.Replace(safeurl, "+", "-", -1)
-    safeurl = strings.Replace(safeurl, "=", "", -1)
-    return safeurl
-}
-
 func AesDecrypt(crypted, key []byte) []byte {
     block, err := aes.NewCipher(key)
     if err != nil {
@@ -163,10 +141,6 @@ func AesEncrypt(src, key string) []byte {
     content = PKCS5Padding(content, block.BlockSize())
     crypted := make([]byte, len(content))
     ecb.CryptBlocks(crypted, content)
-    // 普通base64编码加密 区别于urlsafe base64
-    fmt.Println("base64 result:", base64.StdEncoding.EncodeToString(crypted))
-
-    fmt.Println("base64UrlSafe result:", Base64UrlSafeEncode(crypted))
     return crypted
 }
 
