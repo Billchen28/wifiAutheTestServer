@@ -39,11 +39,7 @@ package main;
             w.Write([]byte("only support POST method."))
         }
     }
-
-    func needAuthe(w http.ResponseWriter, req *http.Request) {
-         w.Write([]byte("Need authe."))
-    }
-
+    
     func normal(w http.ResponseWriter, req *http.Request) {
          w.Write([]byte("not need Authe."))
     }
@@ -110,7 +106,6 @@ package main;
     func main() {
         http.Handle("/reset",http.HandlerFunc(reset));
         http.Handle("/networkcheck",http.HandlerFunc(networkcheck));
-        http.Handle("/needAuthe",http.HandlerFunc(needAuthe));
         http.Handle("/handle",http.HandlerFunc(say));
         http.ListenAndServe(":8001", nil);
         select{};
