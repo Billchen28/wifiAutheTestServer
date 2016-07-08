@@ -103,6 +103,7 @@ package main;
         result["ad_url"] = ad_url
         b, _ := json.Marshal(result)
         crypted := AesEncrypt(string(b), gKey)
+        gNeedAuthe = false;
         return []byte(base64.StdEncoding.EncodeToString(crypted))
     }
 
