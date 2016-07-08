@@ -8,19 +8,101 @@ package main;
 			"encoding/base64"
 			"fmt"
 			"strings"
-			"io/ioutil"  
+			"io/ioutil"
+            "net/url"
+            "encoding/json"
     )
+
+    var {
+        gNeedAuthe bool = true
+        gKey string = "0123456789abcdef"
+    }
 	
     func say(w http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
 			result, _:= ioutil.ReadAll(req.Body)
-			req.Body.Close()  
-			fmt.Printf("%s\n", result)  
-			w.Write([]byte(result))
-		}
+			req.Body.Close()
+			fmt.Printf("%s\n", result)
+            valueTable,_ := url.ParseQuery(result);
+            params := valueTable["params"]
+            if params != nil {
+                proceParams(params)
+            } else {
+                w.Write([]byte("params not FOUND."))
+            }
+		} else {
+            w.Write([]byte("only support POST method."))
+        }
     }
-	
+
+    func needAuthe(w http.ResponseWriter, req *http.Request) {
+         w.Write([]byte("Need authe."))
+    }
+
+    func normal(w http.ResponseWriter, req *http.Request) {
+         w.Write([]byte("not need Authe."))
+    }
+
+    func reset()(w http.ResponseWriter, req *http.Request) {
+        gNeedAuthe = true
+        w.Write([]byte("reset finish."))
+    }
+
+    func networkcheck(w http.ResponseWriter, req *http.Request) {
+        if gNeedAuthe {
+            fmt.Println("networkcheck NeedAuthe")
+            http.Redirect(w, r, "http://m.qq.com", 302)
+        } else {
+            normal(w, req);
+        }  
+    }
+
+    func proceParams(params string, w http.ResponseWriter) {
+        data, _ := Base64URLDecode(params);
+        if data != nil {
+            desc := AesDecrypt(data, []byte(gKey))
+             if desc != nil {
+                var f interface{}
+                json.Unmarshal(desc, &f)
+                m := f.(map[string]interface{})
+                for k, v := range m {
+                switch vv := v.(type) {
+                    case string:
+                        fmt.Println(k, "is string", vv)
+                    case int:
+                        fmt.Println(k, "is int", vv)
+                    case float64:
+                        fmt.Println(k,"is float64",vv)
+                    case []interface{}:
+                        fmt.Println(k, "is an array:")
+                        for i, u := range vv {
+                            fmt.Println(i, u)
+                        }
+                    default:
+                        fmt.Println(k, "is of a type I don't know how to handle")
+                    }
+                }
+                session_id := m["session_id"]
+                if session_id != nil {
+                    w.Write(getResponeData(1, session_id, "http://m.qq.com"))
+                }
+             }
+        }
+    }
+
+    func getResponeData(api_code int, session_id int, ad_url string) []byte {
+        result := make(map[string]interface{})
+        result["api_code"] = api_code
+        result["session_id"] = session_id
+        result["ad_url"] = ad_url
+        crypted := AesEncrypt([]byte(result, gKey))
+        return []byte(Base64UrlSafeEncode(crypted))
+    }
+
     func main() {
+        http.Handle("/reset",http.HandlerFunc(reset));
+        http.Handle("/networkcheck",http.HandlerFunc(networkcheck));
+        http.Handle("/needAuthe",http.HandlerFunc(needAuthe));
         http.Handle("/handle",http.HandlerFunc(say));
         http.ListenAndServe(":8001", nil);
         select{};
