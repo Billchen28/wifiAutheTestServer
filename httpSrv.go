@@ -94,14 +94,14 @@ package main;
                 }
                 session_id := m["session_id"]
                 if session_id != nil {
-                   return getResponeData(1, session_id.(int), "http://m.qq.com")
+                   return getResponeData(1, session_id.(float64), "http://m.qq.com")
                 }
              }
         }
         return nil
     }
 
-    func getResponeData(api_code int, session_id int, ad_url string) []byte {
+    func getResponeData(api_code float64, session_id float64, ad_url string) []byte {
         result := make(map[string]interface{})
         result["api_code"] = api_code
         result["session_id"] = session_id
