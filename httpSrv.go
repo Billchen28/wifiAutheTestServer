@@ -17,11 +17,16 @@ package main;
             "io/ioutil"
             "net/url"
             "encoding/json"
+            "strings"
+            "strconv"
     )
 
     var (
         gNeedAuthe = true//全局标记当前是否返回需要认证
+        gNetworkOk = true//网络是否可用
         gKey = "0123456789abcdef"//中间商合作认证的加密密钥
+        gProtalBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>mmgr</h1></body></html>"
+        gNetworkOkBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>not need Authe.</h1></body></html>"
     )
     
     /**
@@ -50,7 +55,7 @@ package main;
     }
 
     func normal(w http.ResponseWriter, req *http.Request) {
-         w.Write([]byte("not need Authe."))
+         w.Write([]byte(gNetworkOkBody))
     }
 
     func reset(w http.ResponseWriter, req *http.Request) {
@@ -60,10 +65,14 @@ package main;
 
     func networkcheck(w http.ResponseWriter, req *http.Request) {
         if gNeedAuthe {
-            fmt.Println("networkcheck NeedAuthe")
-            http.Redirect(w, req, "http://m.qq.com", 302)
+            http.Redirect(w, req, "/wifiprotal", 302)
         } else {
-            normal(w, req);
+            if gNetworkOk {
+                normal(w, req);
+            } else {
+                http.Error(w, "network not avilable", 500)
+            }
+            
         }  
     }
 
@@ -114,10 +123,83 @@ package main;
         return []byte(base64.StdEncoding.EncodeToString(crypted))
     }
 
+    func config(w http.ResponseWriter, req *http.Request) {
+        valueTable,_ := url.ParseQuery(req.RequestURI)
+        key := valueTable["key"]
+        var buffer bytes.Buffer
+        if key != nil && len(key[0]) == 32 {
+            buffer.WriteString("key=")
+            gKey = key[0]
+            buffer.WriteString(gKey)
+        } else if key != nil && len(key) > 0 {
+            buffer.WriteString("key=")
+            gKey = key[0]
+            buffer.WriteString(gKey)
+            buffer.WriteString(" is not legal")
+            buffer.WriteString(strconv.Itoa(len(gKey)))
+        }
+        buffer.WriteString("\n")
+        protalbody := valueTable["protalbody"]
+        if protalbody != nil && len(protalbody) > 0 {
+            buffer.WriteString("protalbody=")
+            v,_ := url.QueryUnescape(protalbody[0])
+            gProtalBody = v
+            buffer.WriteString(gProtalBody)
+        }
+        buffer.WriteString("\n")
+        networkokbody := valueTable["networkokbody"]
+        if networkokbody != nil && len(networkokbody) > 0 {
+            buffer.WriteString("networkokbody=")
+            v,_ := url.QueryUnescape(networkokbody[0])
+            gNetworkOkBody = v
+            buffer.WriteString(gNetworkOkBody)
+        }
+        buffer.WriteString("\n")
+        networkok := valueTable["networkok"]
+        if networkok != nil && len(networkok) > 0 {
+            buffer.WriteString("networkok=")
+            networkok_val := networkok[0]
+            if strings.Compare(networkok_val, "true") == 0 {
+                gNetworkOk = true
+            } else {
+                gNetworkOk = false
+            }
+            buffer.WriteString(networkok_val)
+        }
+        buffer.WriteString("\n")
+        needProtal := valueTable["needprotal"]
+        if needProtal != nil && len(needProtal) > 0 {
+            buffer.WriteString("needProtal=")
+            needProtal_val := needProtal[0]
+            if strings.Compare(needProtal_val, "true") == 0 {
+                gNeedAuthe = true
+            } else {
+                gNeedAuthe = false
+            }
+            buffer.WriteString(needProtal_val)
+        }
+        buffer.WriteString("\n")
+        w.Write(buffer.Bytes())
+    }
+
+    func setnetwork(w http.ResponseWriter, req *http.Request) {
+        gNeedAuthe = false;
+        w.Write([]byte("reset finish."))
+    }
+
+    func wifiprotal(w http.ResponseWriter, req *http.Request) {
+        fmt.Println("wifiprotal")
+        fmt.Println(gProtalBody)
+        w.Write([]byte(gProtalBody))
+    }
+
     func main() {
         http.Handle("/reset",http.HandlerFunc(reset));
+        http.Handle("/setnetwork",http.HandlerFunc(setnetwork));
         http.Handle("/networkcheck",http.HandlerFunc(networkcheck));
+        http.Handle("/wifiprotal",http.HandlerFunc(wifiprotal));
         http.Handle("/handle",http.HandlerFunc(say));
+        http.Handle("/config",http.HandlerFunc(config));
         http.ListenAndServe(":8001", nil);
         select{};
     }
