@@ -24,7 +24,7 @@ package main;
     var (
         gNeedAuthe = true//全局标记当前是否返回需要认证
         gNetworkOk = true//网络是否可用
-        gKey = "0123456789abcdef"//中间商合作认证的加密密钥
+        gKey = "0123456789abcdef0123456789abcd12"//中间商合作认证的加密密钥
         gProtalBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>mmgr</h1></body></html>"
         gNetworkOkBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>not need Authe.</h1></body></html>"
     )
