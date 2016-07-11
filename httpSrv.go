@@ -25,24 +25,23 @@ package main;
         gNeedAuthe = true//全局标记当前是否返回需要认证
         gNetworkOk = true//网络是否可用
         gKey = "0123456789abcdef0123456789abcd12"//中间商合作认证的加密密钥
-        gProtalBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>mmgr</h1></body></html>"
-        gNetworkOkBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>not need Authe.</h1></body></html>"
+        gProtalBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>mmgr</h1></body></html>"//需要认证情况下的页面内容
+        gNetworkOkBody = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>mmgr</title></head><body><h1>not need Authe.</h1></body></html>"//可以上网时候的页面内容
     )
     
     /**
     处理鉴权请求
     **/
-    func say(w http.ResponseWriter, req *http.Request) {
-        if req.Method == "POST" {
+    func handleAuthe(w http.ResponseWriter, req *http.Request) {
+        if req.Method == "POST" {//只针对post方法处理
             result, _:= ioutil.ReadAll(req.Body)
             req.Body.Close()
-            fmt.Printf("%s\n", result)
-            valueTable,_ := url.ParseQuery(string(result));
+            valueTable,_ := url.ParseQuery(string(result));//ParseQuery会顺便进行urldecode
             params := valueTable["params"]//解释拿到鉴权参数
             if params != nil {
                 respont := proceParams(string(params[0]))//根据鉴权参数进行处理
                 if respont != nil {
-                     w.Write(respont)
+                     w.Write(respont)//将结果直接返回
                  } else {
                     w.Write([]byte("proceParams fail."))
                  }
@@ -55,56 +54,36 @@ package main;
     }
 
     func normal(w http.ResponseWriter, req *http.Request) {
-         w.Write([]byte(gNetworkOkBody))
+         w.Write([]byte(gNetworkOkBody))//返回可以上网情况下的页面
     }
 
-    func reset(w http.ResponseWriter, req *http.Request) {
-        gNeedAuthe = true
-        w.Write([]byte("reset finish."))
-    }
-
+    //返回网络检查结果
     func networkcheck(w http.ResponseWriter, req *http.Request) {
-        if gNeedAuthe {
-            http.Redirect(w, req, "/wifiprotal", 302)
+        if gNeedAuthe {//需要认证
+            http.Redirect(w, req, "/wifiprotal", 302)//返回认证页面内容
         } else {
-            if gNetworkOk {
+            if gNetworkOk {//可以上网
                 normal(w, req);
             } else {
-                http.Error(w, "network not avilable", 500)
+                http.Error(w, "network not avilable", 500)//不能上网，返回500
             }
             
         }  
     }
 
-//鉴权处理函数
+    //鉴权处理函数
     func proceParams(params string) []byte {
+        //这里的params是已经被urldecode的，所以可以直接bas64 decode
         data, _ := base64.StdEncoding.DecodeString(params)
         if data != nil {
             //解密
             desc := AesDecrypt(data, []byte(gKey))
              if desc != nil {
                 var f interface{}
-                json.Unmarshal(desc, &f)//
+                json.Unmarshal(desc, &f)//转换成json
                 m := f.(map[string]interface{})
-                for k, v := range m {
-                switch vv := v.(type) {
-                    case string:
-                        fmt.Println(k, "is string", vv)
-                    case int:
-                        fmt.Println(k, "is int", vv)
-                    case float64:
-                        fmt.Println(k,"is float64",vv)
-                    case []interface{}:
-                        fmt.Println(k, "is an array:")
-                        for i, u := range vv {
-                            fmt.Println(i, u)
-                        }
-                    default:
-                        fmt.Println(k, "is of a type I don't know how to handle")
-                    }
-                }
-                session_id := m["session_id"]
-                if session_id != nil {
+                session_id := m["session_id"]//获取session_id
+                if session_id != nil {//如果是正常请求，生成返回结果，跳转url先hardcode
                    return getResponeData(1, session_id.(float64), "http://m.qq.com")
                 }
              }
@@ -112,6 +91,7 @@ package main;
         return nil
     }
 
+    //返回json结果
     func getResponeData(api_code float64, session_id float64, ad_url string) []byte {
         result := make(map[string]interface{})
         result["api_code"] = api_code
@@ -123,6 +103,7 @@ package main;
         return []byte(base64.StdEncoding.EncodeToString(crypted))
     }
 
+    //处理鉴权服务配置请求
     func config(w http.ResponseWriter, req *http.Request) {
         valueTable,_ := url.ParseQuery(req.RequestURI)
         key := valueTable["key"]
@@ -182,11 +163,7 @@ package main;
         w.Write(buffer.Bytes())
     }
 
-    func setnetwork(w http.ResponseWriter, req *http.Request) {
-        gNeedAuthe = false;
-        w.Write([]byte("reset finish."))
-    }
-
+    //返回protal页面
     func wifiprotal(w http.ResponseWriter, req *http.Request) {
         fmt.Println("wifiprotal")
         fmt.Println(gProtalBody)
@@ -194,11 +171,9 @@ package main;
     }
 
     func main() {
-        http.Handle("/reset",http.HandlerFunc(reset));
-        http.Handle("/setnetwork",http.HandlerFunc(setnetwork));
         http.Handle("/networkcheck",http.HandlerFunc(networkcheck));
         http.Handle("/wifiprotal",http.HandlerFunc(wifiprotal));
-        http.Handle("/handle",http.HandlerFunc(say));
+        http.Handle("/handle",http.HandlerFunc(handleAuthe));
         http.Handle("/config",http.HandlerFunc(config));
         http.ListenAndServe(":8001", nil);
         select{};
