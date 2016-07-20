@@ -3,11 +3,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta charset="utf-8">
-	<title>欢迎光临Wifi</title>
+	<title>欢迎使用风云极速WiFi</title>
 	<meta name="viewport" content="width=device-width initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link href="/ewifi/css/bootstrap.css" rel="stylesheet">
 	<link href="/ewifi/css/style.css" type="text/css" rel="stylesheet">
-	<script type="text/javascript" src="./js/md5.js"></script>
+	<script type="text/javascript" src="/ewifi/js/md5.js"></script>
 	<script type="text/javascript">
 		function submitform(){
 			document.getElementById("password").value=hex_md5(document.getElementById("password").value);
@@ -16,11 +16,14 @@
 	</script>
 	</head>
 <body>
+<h1>
+欢迎使用风云极速WiFi
+</h1>
 	<form id="userlogin" method="post" action="/ewifi/loginValidate/">
 		<div class="tmall_demo">
 			<div class="tmall_border">
-				<a href="/ewifi/install/ewifi.apk" target="_blank" title="下载安装包,">
-					<i><img src="/ewifi/img/qq.png" width="28" alt="下载安装包"></i><span>下载安装包</span>
+				<a href="/ewifi/install/ewifi.apk" target="_blank" title="下载WiFi管家安装包">
+					<i><img src="/ewifi/img/qq.png" width="28" alt="下载WiFi管家安装包"></i><span>下载WiFi管家安装包</span>
 				</a>
 			</div>
 			<div class="div_del mobileverify">
@@ -56,6 +59,12 @@
 		<input type="hidden" name="url" value="<<param.url>>">
 		<div class="mt5">
 			<input id="submithandle" type="submit" class="into_btn verifySubmitHandler" value=" 注册"></div>
+		</div>
+		</div>
+	</form>
+	<form  method="get" action="#">
+		<div class="mt5">
+			<input id="submithandle" type="submit" class="into_btn verifySubmitHandler" value="WiFi管家一键连接（开发中）"></div>
 		</div>
 		</div>
 	</form>

@@ -156,10 +156,11 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	 * redict to login page
 	 * */
 	private HttpResponse parseLogin(ChannelHandlerContext ctx, QueryStringDecoder content) {
-		
-		String key = DeviceCache.getInstance().getKey(HttpParameterHelper.getParameters(content, "gw_id"));
+		String key = DeviceCache.getInstance().isDeviceInDao(HttpParameterHelper.getParameters(content, "gw_id"));
 		if(key==null || key.isEmpty()){
 			return sendPrepare(ctx,"非联盟商家,无法认证!");
+		} else {
+			LogHelper.info("gwinfo: "+key);
 		}
 		HttpResponse response = null;
 		response = returnLoginPage(ctx, content,null);

@@ -27,13 +27,13 @@ public class DeviceCache {
 		
 	}
 	
-	private String queryFromDB(String mac){
+	private String queryByMacFromDB(String mac){
 		SqlSession session = null;
 		try{
 			SqlSessionFactory factory = SessionFactory.getInstance();
 			session = factory.openSession();
 			DeviceMapper deviceMapper = session.getMapper(DeviceMapper.class);
-			List<String> list = deviceMapper.select(mac);
+			List<String> list = deviceMapper.selectByMac(mac);
 			if(list!=null && list.size()!=0){
 				return list.get(0);
 			}
@@ -48,10 +48,35 @@ public class DeviceCache {
 		return null;
 	}
 	
+	private String queryByGwIdFromDB(String gwId){
+		SqlSession session = null;
+		try{
+			SqlSessionFactory factory = SessionFactory.getInstance();
+			session = factory.openSession();
+			DeviceMapper deviceMapper = session.getMapper(DeviceMapper.class);
+			List<String> list = deviceMapper.selectByGwId(gwId);
+			if(list!=null && list.size()!=0){
+				return list.get(0);
+			}
+			
+		}catch(Exception e){
+			LogHelper.error(ExceptionUtils.getFullStackTrace(e));
+		}finally{
+			if(session!=null){
+				session.close();
+			}
+		}
+		return null;
+	}
+	
+	public String isDeviceInDao(String gwId) {
+		return queryByGwIdFromDB(gwId);
+	}
+	
 	public String getKey(String mac){
 //		String key = cache.get(mac);
 //		if(key==null && !query.contains(mac)){
-		String	key =  queryFromDB(mac);
+		String	key =  queryByMacFromDB(mac);
 //			cache.put(mac, key);
 //			query.add(mac);
 //		}

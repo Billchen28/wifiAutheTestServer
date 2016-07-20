@@ -22,10 +22,10 @@ DROP TABLE IF EXISTS `merchant_device`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `merchant_device` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `gw_id` varchar(128) NOT NULL,
   `mac` varchar(50) NOT NULL,
   `status` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`gw_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -12,6 +12,9 @@ import org.apache.ibatis.annotations.Select;
 
 public interface DeviceMapper {
 	@Select("SELECT merchant_device.status FROM merchant_device WHERE mac = #{param1} limit 1")
-	public List<String> select(String mac);
+	public List<String> selectByMac(String mac);
+	
+	@Select("SELECT merchant_device.status FROM merchant_device WHERE gw_id = #{param1} limit 1")
+	public List<String> selectByGwId(String gw_id);
 	
 }
