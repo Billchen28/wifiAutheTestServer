@@ -16,6 +16,7 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -48,6 +49,13 @@ import wifi.authserver.httphandler.cache.DeviceCache;
 import wifi.authserver.httphandler.cache.KeepAliver;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
+	
+	private class OnlineUser {
+		public long mLoginTime = 0l;
+		public String mUserName;
+	}
+	
+	private HashMap<String, OnlineUser> mOnlineClients = new HashMap<String, HttpHandler.OnlineUser>();
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
 		QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
@@ -132,12 +140,24 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	private HttpResponse parseAuth(ChannelHandlerContext ctx, QueryStringDecoder content) {
 		HttpResponse response = null;
 		boolean isT = KeepAliver.getInstance().updateLog(content);
+		boolean keepOnline = false;
 		if(isT){
+			String token = HttpParameterHelper.getParameters(content, "token");
+			if (token == null || token.length() <= 0) {
+				OnlineUser user = mOnlineClients.get(token);
+				if (user != null && (System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
+					mOnlineClients.remove(token);
+					keepOnline = false;
+				} else {
+					keepOnline = true;
+				}
+			}
+		}
+		if (keepOnline) {
 			response = sendPrepare(ctx,"Auth: 1\nMessages: no");
-		}else{
+		} else {
 			response = sendPrepare(ctx,"Auth: 0\nMessages: no");
 		}
-		
 		return response;
 	}
 	
@@ -193,7 +213,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		response = returnRegeditPage(ctx, content,null);
 		return response;
 	}
-	
 	
 	private HttpResponse parseRemoveClient(ChannelHandlerContext ctx, QueryStringDecoder content) {
 		String token = HttpParameterHelper.getParameters(content, "token");
@@ -459,7 +478,13 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
 			response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
 			LogHelper.info("redirectUrl is  : "+redirectUrl);
-			
+			OnlineUser user = mOnlineClients.get(wifiname);
+			if (user == null) {
+				user = new OnlineUser();
+				user.mUserName = wifiname;
+				user.mLoginTime = System.currentTimeMillis();
+				mOnlineClients.put(wifiname, user);
+			}
 		}catch(Exception e){
 			LogHelper.error(ExceptionUtils.getFullStackTrace(e));
 		}finally{
