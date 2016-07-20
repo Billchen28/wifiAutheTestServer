@@ -145,11 +145,15 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			String token = HttpParameterHelper.getParameters(content, "token");
 			if (token != null && token.length() > 0) {
 				OnlineUser user = mOnlineClients.get(token);
-				if (user != null && (System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
-//					mOnlineClients.remove(token);
-					keepOnline = false;
+				if (user != null) {
+					if ((System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
+//						mOnlineClients.remove(token);
+						keepOnline = false;
+					} else {
+						keepOnline = true;
+					}
 				} else {
-					keepOnline = true;
+					keepOnline = false;
 				}
 			}
 		}
