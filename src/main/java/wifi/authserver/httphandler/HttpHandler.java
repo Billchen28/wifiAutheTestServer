@@ -16,7 +16,6 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -47,15 +46,9 @@ import wifi.authserver.dao.map.UserMapper;
 import wifi.authserver.dao.obj.User;
 import wifi.authserver.httphandler.cache.DeviceCache;
 import wifi.authserver.httphandler.cache.KeepAliver;
+import wifi.authserver.httphandler.cache.KeepAliver.OnlineUser;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
-	
-	private class OnlineUser {
-		public long mLoginTime = 0l;
-		public String mUserName;
-	}
-	
-	private HashMap<String, OnlineUser> mOnlineClients = new HashMap<String, HttpHandler.OnlineUser>();
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
 		QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
@@ -144,7 +137,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		if(isT){
 			String token = HttpParameterHelper.getParameters(content, "token");
 			if (token != null && token.length() > 0) {
-				OnlineUser user = mOnlineClients.get(token);
+				OnlineUser user = KeepAliver.getInstance().getOnlineUser(token);
 				if (user != null) {
 					if ((System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
 //						mOnlineClients.remove(token);
@@ -482,12 +475,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
 			response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
 			LogHelper.info("redirectUrl is  : "+redirectUrl);
-			OnlineUser user = mOnlineClients.get(wifiname);
+			OnlineUser user = KeepAliver.getInstance().getOnlineUser(wifiname);
 			if (user == null) {
-				user = new OnlineUser();
-				user.mUserName = wifiname;
-				user.mLoginTime = System.currentTimeMillis();
-				mOnlineClients.put(wifiname, user);
+				KeepAliver.getInstance().addOnlinUser(wifiname);
 			}
 		}catch(Exception e){
 			LogHelper.error(ExceptionUtils.getFullStackTrace(e));

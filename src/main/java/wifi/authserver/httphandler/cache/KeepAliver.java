@@ -32,9 +32,15 @@ public class KeepAliver implements Runnable {
 	private Map<String, UserLog> cacheMap = new HashMap<String, UserLog>();
 	private Set<String> blackset = new HashSet<String>();
 	private Set<String> removeset = new HashSet<String>();
+	
+	public class OnlineUser {
+		public long mLoginTime = 0l;
+		public String mUserName;
+	}
+	
+	private HashMap<String, OnlineUser> mOnlineClients = new HashMap<String, KeepAliver.OnlineUser>();
 
 	private KeepAliver() {
-
 	}
 	
 	
@@ -211,6 +217,17 @@ public class KeepAliver implements Runnable {
 	
 	public void delBlackset(String blackname) {
 		this.blackset.remove(blackname);
+	}
+	
+	public void addOnlinUser(String token) {
+		OnlineUser user = new OnlineUser();
+		user.mUserName = token;
+		user.mLoginTime = System.currentTimeMillis();
+		mOnlineClients.put(token, user);
+	}
+	
+	public OnlineUser getOnlineUser(String token) {
+		return mOnlineClients.get(token);
 	}
 	
 	public boolean updateLog(QueryStringDecoder content) {
