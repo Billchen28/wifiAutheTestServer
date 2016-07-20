@@ -146,7 +146,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			if (token != null && token.length() > 0) {
 				OnlineUser user = mOnlineClients.get(token);
 				if (user != null && (System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
-					mOnlineClients.remove(token);
+//					mOnlineClients.remove(token);
 					keepOnline = false;
 				} else {
 					keepOnline = true;
