@@ -126,7 +126,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		}else{
 			response = sendPrepare(ctx,"欢迎你连接"+HttpParameterHelper.getParameters(content, "gw_id")+",你现在可以正常上网了!");
 		}
-		
 		return response;
 	}
 	
@@ -139,8 +138,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			if (token != null && token.length() > 0) {
 				OnlineUser user = KeepAliver.getInstance().getOnlineUser(token);
 				if (user != null) {
-					if ((System.currentTimeMillis() - user.mLoginTime) > 2 * 60 * 1000) {
-//						mOnlineClients.remove(token);
+					if ((System.currentTimeMillis() - user.mLoginTime) > 60 * 60 * 1000) {
 						keepOnline = false;
 					} else {
 						keepOnline = true;
@@ -478,6 +476,8 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			OnlineUser user = KeepAliver.getInstance().getOnlineUser(wifiname);
 			if (user == null) {
 				KeepAliver.getInstance().addOnlinUser(wifiname);
+			} else {
+				KeepAliver.getInstance().updateOnlineUserLoginTime(wifiname);
 			}
 		}catch(Exception e){
 			LogHelper.error(ExceptionUtils.getFullStackTrace(e));

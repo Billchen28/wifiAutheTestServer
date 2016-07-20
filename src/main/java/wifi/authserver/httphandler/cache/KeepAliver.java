@@ -226,6 +226,13 @@ public class KeepAliver implements Runnable {
 		mOnlineClients.put(token, user);
 	}
 	
+	public void updateOnlineUserLoginTime(String token) {
+		OnlineUser user = mOnlineClients.get(token);
+		if (user != null) {
+			user.mLoginTime = System.currentTimeMillis();
+		}
+	}
+	
 	public OnlineUser getOnlineUser(String token) {
 		return mOnlineClients.get(token);
 	}
