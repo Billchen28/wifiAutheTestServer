@@ -579,6 +579,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_address>>",HttpParameterHelper.getParameters(content, "gw_address"));
 		responseContent = responseContent.replaceAll("<<param.gw_port>>",HttpParameterHelper.getParameters(content, "gw_port"));
 		responseContent = responseContent.replaceAll("<<param.gw_id>>",HttpParameterHelper.getParameters(content, "gw_id"));
+		responseContent = responseContent.replaceAll("<<param.client_mac>>",HttpParameterHelper.getParameters(content, "mac"));
 		responseContent = responseContent.replaceAll("<<param.url>>",HttpParameterHelper.getParameters(content, "url"));
 		
 		if(tips==null){

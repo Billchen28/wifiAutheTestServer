@@ -7,12 +7,23 @@
 	<meta name="viewport" content="width=device-width initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link href="/ewifi/css/bootstrap.css" rel="stylesheet">
 	<link href="/ewifi/css/style.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet" href="/ewifi/css/style-simple-follow.css">
 	<script type="text/javascript" src="/ewifi/js/md5.js"></script>
+	<script type="text/javascript" src="/ewifi/js/wechatutil.js" ></script>
 	<script type="text/javascript">
 		function submitform(){
 			document.getElementById("password").value=hex_md5(document.getElementById("password").value);
 			document.getElementById("userlogin").submit();
 		}
+	</script>
+	<script type="text/javascript" src="https://wifi.weixin.qq.com/resources/js/wechatticket/wechatutil.js" ></script>
+	<script type="text/javascript">
+		function callWechatBrowser(){
+			Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', 'http://wifi.weixin.qq.com/assistant/wifigw/auth.xhtml?httpCode=200', '<<param.client_mac>>', '风云极速WiFi', '<<param.gw_mac>>');
+		}
+	</script>
+	<script type="text/javascript">
+		document.addEventListener('visibilitychange', putNoResponse, false);
 	</script>
 	</head>
 <body>
@@ -68,5 +79,6 @@
 		</div>
 		</div>
 	</form>
+	<a class="mod-simple-follow-page__attention-btn" onclick="callWechatBrowser()">一键打开微信连Wi-Fi</a>
 </body>
 </html>
