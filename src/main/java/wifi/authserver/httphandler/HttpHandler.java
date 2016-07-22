@@ -135,7 +135,21 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		boolean keepOnline = false;
 		if(isT){
 			String token = HttpParameterHelper.getParameters(content, "token");
-			if (token != null && token.length() > 0) {
+			String authTypeStr = HttpParameterHelper.getParameters(content, "auth_type");
+			final int NORMAL_AUTH = 0x00;
+			final int WX_TMP_AUTH = 0x01;
+			int auth_type = NORMAL_AUTH;
+			if (authTypeStr != null) {
+				try {
+					auth_type = Integer.valueOf(authTypeStr);
+				} catch (Exception e) {
+				}
+			}
+			if (auth_type == WX_TMP_AUTH) {
+				LogHelper.info("WX_TMP_AUTH allow.");
+				keepOnline = true;
+			}
+			if (!keepOnline && token != null && token.length() > 0) {
 				OnlineUser user = KeepAliver.getInstance().getOnlineUser(token);
 				if (user != null) {
 					if ((System.currentTimeMillis() - user.mLoginTime) > 60 * 60 * 1000) {

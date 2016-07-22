@@ -242,12 +242,9 @@ public class KeepAliver implements Runnable {
 		String mac = HttpParameterHelper.getParameters(content, "mac");
 		String token = HttpParameterHelper.getParameters(content, "token");
 		String gw_id = HttpParameterHelper.getParameters(content, "gw_id");
-
 		String incoming = HttpParameterHelper.getParameters(content, "incoming");
 		String outgoing = HttpParameterHelper.getParameters(content, "outgoing");
-
 		String key = gw_id + token + mac+ ip;
-		
 		if(blackset.contains(gw_id+"-"+token) || removeset.contains(gw_id+"-"+token)){
 			UserLog userlog = null;
 			lock.lock();
