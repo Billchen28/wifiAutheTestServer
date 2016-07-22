@@ -136,6 +136,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		if(isT){
 			String token = HttpParameterHelper.getParameters(content, "token");
 			String authTypeStr = HttpParameterHelper.getParameters(content, "auth_type");
+			LogHelper.info("authTypeStr:" + authTypeStr);
 			final int NORMAL_AUTH = 0x00;
 			final int WX_TMP_AUTH = 0x01;
 			int auth_type = NORMAL_AUTH;
