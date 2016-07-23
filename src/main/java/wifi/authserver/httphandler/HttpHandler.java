@@ -133,28 +133,32 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		HttpResponse response = null;
 		boolean isT = KeepAliver.getInstance().updateLog(content);
 		boolean keepOnline = false;
-		if(isT){
-			String token = HttpParameterHelper.getParameters(content, "token");
-			String authTypeStr = HttpParameterHelper.getParameters(content, "auth_type");
-			if (authTypeStr != null) {
-				LogHelper.info("authTypeStr:" + authTypeStr);	
-			} else {
-				LogHelper.info("authTypeStr:null");
+		String token = HttpParameterHelper.getParameters(content, "token");
+		String authTypeStr = HttpParameterHelper.getParameters(content, "auth_type");
+		if (authTypeStr != null) {
+			LogHelper.info("authTypeStr:" + authTypeStr);	
+		} else {
+			LogHelper.info("authTypeStr:null");
+		}
+		
+		final int NORMAL_AUTH = 0x00;
+		final int WX_TMP_AUTH = 0x01;
+		final int WX_AUTH = 0x02;
+		int auth_type = NORMAL_AUTH;
+		if (authTypeStr != null) {
+			try {
+				auth_type = Integer.valueOf(authTypeStr);
+			} catch (Exception e) {
 			}
-			
-			final int NORMAL_AUTH = 0x00;
-			final int WX_TMP_AUTH = 0x01;
-			int auth_type = NORMAL_AUTH;
-			if (authTypeStr != null) {
-				try {
-					auth_type = Integer.valueOf(authTypeStr);
-				} catch (Exception e) {
-				}
-			}
-			if (auth_type == WX_TMP_AUTH) {
-				LogHelper.info("WX_TMP_AUTH allow.");
-				keepOnline = true;
-			}
+		}
+		if (auth_type == WX_TMP_AUTH) {
+			LogHelper.info("WX_TMP_AUTH allow.");
+			keepOnline = true;
+		} else if (auth_type == WX_AUTH) {
+			LogHelper.info("WX_AUTH allow.");
+			keepOnline = true;
+		}
+		if(!keepOnline && isT){
 			if (!keepOnline && token != null && token.length() > 0) {
 				OnlineUser user = KeepAliver.getInstance().getOnlineUser(token);
 				if (user != null) {
@@ -504,8 +508,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		}finally{
 			if(session!=null){
 				session.close();
-			}
-			
+			}	
 		}
 		return response;
 	}
@@ -594,24 +597,69 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	 * return login page,if user & password is error.return error tips!
 	 * */
 	private HttpResponse returnLoginPage(ChannelHandlerContext ctx, QueryStringDecoder content,String tips) {
+		testSign();
 		HttpResponse response;
 		String responseContent = ReadAll.readAll("web/login.html", "utf-8");
 		responseContent = responseContent.replaceAll("<<param.gw_address>>",HttpParameterHelper.getParameters(content, "gw_address"));
 		responseContent = responseContent.replaceAll("<<param.gw_port>>",HttpParameterHelper.getParameters(content, "gw_port"));
 		responseContent = responseContent.replaceAll("<<param.gw_id>>",HttpParameterHelper.getParameters(content, "gw_id"));
-		responseContent = responseContent.replaceAll("<<param.client_mac>>",HttpParameterHelper.getParameters(content, "mac"));
+		String mac = HttpParameterHelper.getParameters(content, "mac");
+		responseContent = responseContent.replaceAll("<<param.client_mac>>",mac);
 		responseContent = responseContent.replaceAll("<<param.url>>",HttpParameterHelper.getParameters(content, "url"));
-		
+		String gw_mac = HttpParameterHelper.getParameters(content, "gw_mac");
+		responseContent = responseContent.replaceAll("<<param.gw_mac>>",gw_mac);
+		String ssid = "风云极速WiFi";
+		responseContent = responseContent.replaceAll("<<param.gw_ssid>>", ssid);
+		String authUrl = "http://192.168.144.1:2060/wifidog/wx_auth";
+		responseContent = responseContent.replaceAll("<<param.weixin.auth_url>>",authUrl);
+		String extend = "extend_msg_for_wifi_dog";
+		responseContent = responseContent.replaceAll("<<param.weixin.extend>>",extend);
+		String timestamp = String.valueOf(System.currentTimeMillis());
+		responseContent = responseContent.replaceAll("<<param.weixin.timestamp>>",timestamp);
+		String sign = "";
+		String appId = "xxx";
+		String shopId = "xxxx";
+		String secretKey = "xxxx";
+		String signSrc = appId + extend + timestamp + shopId + authUrl + mac + ssid + gw_mac + secretKey;
+		sign = getMD5(signSrc.getBytes());
+		responseContent = responseContent.replaceAll("<<param.weixin.sign>>",sign);
 		if(tips==null){
 			responseContent = responseContent.replaceAll("<<showtips>>","");
 		}else{
 			responseContent = responseContent.replaceAll("<<showtips>>","<input type='button' onclick='return;' class='get_btn' value='"+tips+"'>");
 		}
-		
 		response = sendPrepare(ctx, responseContent);
 		return response;
 	}
 	
+	String getMD5(byte[] source) {
+		  String s = null;
+		  char hexDigits[] = {       // 用来将字节转换成 16 进制表示的字符
+		     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',  'e', 'f'}; 
+		   try
+		   {
+		    java.security.MessageDigest md = java.security.MessageDigest.getInstance( "MD5" );
+		    md.update( source );
+		    byte tmp[] = md.digest();          // MD5 的计算结果是一个 128 位的长整数，
+		                                                // 用字节表示就是 16 个字节
+		    char str[] = new char[16 * 2];   // 每个字节用 16 进制表示的话，使用两个字符，
+		                                                 // 所以表示成 16 进制需要 32 个字符
+		    int k = 0;                                // 表示转换结果中对应的字符位置
+		    for (int i = 0; i < 16; i++) {          // 从第一个字节开始，对 MD5 的每一个字节
+		                                                 // 转换成 16 进制字符的转换
+		     byte byte0 = tmp[i];                 // 取第 i 个字节
+		     str[k++] = hexDigits[byte0 >>> 4 & 0xf];  // 取字节中高 4 位的数字转换, 
+		                                                             // >>> 为逻辑右移，将符号位一起右移
+		     str[k++] = hexDigits[byte0 & 0xf];            // 取字节中低 4 位的数字转换
+		    } 
+		    s = new String(str);                                 // 换后的结果转换为字符串
+
+		   }catch( Exception e )
+		   {
+		    e.printStackTrace();
+		   }
+		   return s;
+		 }
 	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {

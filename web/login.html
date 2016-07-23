@@ -3,6 +3,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
 	<title>欢迎使用风云极速WiFi</title>
 	<meta name="viewport" content="width=device-width initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link href="/ewifi/css/bootstrap.css" rel="stylesheet">
@@ -16,14 +21,16 @@
 			document.getElementById("userlogin").submit();
 		}
 	</script>
-	<script type="text/javascript" src="https://wifi.weixin.qq.com/resources/js/wechatticket/wechatutil.js" ></script>
 	<script type="text/javascript">
-		function callWechatBrowser(){
-			Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', 'http://wifi.weixin.qq.com/assistant/wifigw/auth.xhtml?httpCode=200', '<<param.client_mac>>', '风云极速WiFi', '<<param.gw_mac>>');
+		//注册回调函数
+		function jsonpTmpAuthCallback(result){
+			if(result && result.success){
+		//		alert('tmp auth success');
+				Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', '<<param.weixin.auth_url>>', '<<param.client_mac>>', '<<param.gw_ssid>>', '<<param.gw_mac>>');
+			}else if(result && !result.success){
+				alert(`tmp auth fail.`);
+			}
 		}
-	</script>
-	<script type="text/javascript">
-		document.addEventListener('visibilitychange', putNoResponse, false);
 	</script>
 	</head>
 <body>
@@ -79,6 +86,9 @@
 		</div>
 		</div>
 	</form>
-	<a class="mod-simple-follow-page__attention-btn" onclick="callWechatBrowser()">一键打开微信连Wi-Fi</a>
+	<a class="mod-simple-follow-page__attention-btn" onclick="tmpAuth()">一键打开微信连Wi-Fi</a>
 </body>
+<script type="text/javascript">
+	document.addEventListener('visibilitychange', putNoResponse, false);
+</script>
 </html>
