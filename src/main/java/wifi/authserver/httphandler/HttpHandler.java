@@ -597,7 +597,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	 * return login page,if user & password is error.return error tips!
 	 * */
 	private HttpResponse returnLoginPage(ChannelHandlerContext ctx, QueryStringDecoder content,String tips) {
-		testSign();
 		HttpResponse response;
 		String responseContent = ReadAll.readAll("web/login.html", "utf-8");
 		responseContent = responseContent.replaceAll("<<param.gw_address>>",HttpParameterHelper.getParameters(content, "gw_address"));
