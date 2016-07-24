@@ -13,6 +13,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_A
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -618,7 +619,11 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
 		String tempAuthToken = "tempAuthToken";
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_token>>",tempAuthToken);
-		String extend = "extend_msg_for_wifi_dog";
+		String extend = "default_extend.";
+		try {
+			extend = URLEncoder.encode("ip=" + ip + "&mac=" + mac, "UTF-8");
+		} catch (Exception e) {
+		}
 		responseContent = responseContent.replaceAll("<<param.weixin.extend>>",extend);
 		String timestamp = String.valueOf(System.currentTimeMillis());
 		responseContent = responseContent.replaceAll("<<param.weixin.timestamp>>",timestamp);
