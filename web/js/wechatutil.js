@@ -22,8 +22,7 @@
 var loadIframe = null;
 var noResponse = null;
 var callUpTimestamp = 0;
-var clickPc = 0;
- 
+
 function putNoResponse(ev){
 	 clearTimeout(noResponse);
 }	
@@ -106,7 +105,6 @@ function pcAuth(temp_auth_url, ip, mac, token) {
 	var url = temp_auth_url + "?ip=" + ip +
 							 "&mac=" + mac +
 							 "&token=" + token;
-	clickPc = 1;
 	//通过dom操作创建script节点实现异步请求  
 	var script = document.createElement('script');  
 	script.setAttribute('src', url);
