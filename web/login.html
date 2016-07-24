@@ -15,6 +15,7 @@
 	<link rel="stylesheet" href="/ewifi/css/style-simple-follow.css">
 	<script type="text/javascript" src="/ewifi/js/md5.js"></script>
 	<script type="text/javascript" src="/ewifi/js/wechatutil.js" ></script>
+	<script type="text/javascript" src="/ewifi/js/pcauth.js" ></script>
 	<script type="text/javascript">
 		function submitform(){
 			document.getElementById("password").value=hex_md5(document.getElementById("password").value);
@@ -24,11 +25,24 @@
 	<script type="text/javascript">
 		//注册回调函数
 		function jsonpTmpAuthCallback(result){
-			if(result && result.success){
-		//		alert('tmp auth success');
-				Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', '<<param.weixin.auth_url>>', '<<param.client_mac>>', '<<param.gw_ssid>>', '<<param.gw_mac>>');
-			}else if(result && !result.success){
-				alert(`tmp auth fail.`);
+			if (clickPc) {
+				alert(`jsonpTmpAuthCallback clickPc`);
+				JSAPI.auth({
+			    	target : document.getElementById('qrcode_zone'),
+			        appId : 'wx510676585e2b8e83',
+			        shopId : 5666808,
+			        extend : 'wechatpc',
+			        //authUrl : 'http://wifi.weixin.qq.com/mbl/default.xhtml'
+			        authUrl : 'http://wximg.qq.com/tmt/wifi-landing-pc/dist/html/index-success.html'
+			    });
+				clickPc = 0;
+			} else {
+				if(result && result.success){
+			//		alert('tmp auth success');
+					Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', '<<param.weixin.auth_url>>', '<<param.client_mac>>', '<<param.gw_ssid>>', '<<param.gw_mac>>');
+				}else if(result && !result.success){
+					alert(`tmp auth fail.`);
+				}
 			}
 		}
 	</script>
@@ -87,10 +101,18 @@
 		</div>
 	</form>
 	<a class="mod-simple-follow-page__attention-btn" 
-		onclick="tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>''<<param.gw_temp_auth_token>>')">一键打开微信连Wi-Fi</a>
-	<a class="mod-simple-follow-page__attention-btn" onclick="pcAuth()">PC连Wi-Fi</a>
+		onclick="tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');">一键打开微信连Wi-Fi</a><br>
+
+	<div class="main__content-qrcode" id='qrcode_zone' style="text-align:center;margin:20px auto;width:250px;"></div>
+    <div class="main__content-info">使用微信扫描二维码</div>
+
+
+	<a class="mod-simple-follow-page__attention-btn" 
+		onclick="pcAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');">PC微信连Wi-Fi</a>
+
 </body>
 <script type="text/javascript">
 	document.addEventListener('visibilitychange', putNoResponse, false);
 </script>
+
 </html>

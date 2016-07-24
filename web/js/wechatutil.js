@@ -22,6 +22,7 @@
 var loadIframe = null;
 var noResponse = null;
 var callUpTimestamp = 0;
+var clickPc = 0;
  
 function putNoResponse(ev){
 	 clearTimeout(noResponse);
@@ -95,7 +96,6 @@ function tmpAuth(temp_auth_url, ip, mac, token) {
 	var url = temp_auth_url + "?ip=" + ip +
 							 "&mac=" + mac +
 							 "&token=" + token;
-	var url = `http://192.168.144.1:2060/wifidog/wx_tmp_auth?ip=192.168.144.128&mac=00:24:d7:80:a7:c8&token=bill`;
 	//通过dom操作创建script节点实现异步请求  
 	var script = document.createElement('script');  
 	script.setAttribute('src', url);
@@ -106,7 +106,7 @@ function pcAuth(temp_auth_url, ip, mac, token) {
 	var url = temp_auth_url + "?ip=" + ip +
 							 "&mac=" + mac +
 							 "&token=" + token;
-	var url = `http://192.168.144.1:2060/wifidog/wx_tmp_auth?ip=192.168.144.128&mac=00:24:d7:80:a7:c8&token=bill`;
+	clickPc = 1;
 	//通过dom操作创建script节点实现异步请求  
 	var script = document.createElement('script');  
 	script.setAttribute('src', url);
