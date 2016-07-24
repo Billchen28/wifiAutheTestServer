@@ -86,7 +86,9 @@
 		</div>
 		</div>
 	</form>
-	<a class="mod-simple-follow-page__attention-btn" onclick="tmpAuth()">一键打开微信连Wi-Fi</a>
+	<a class="mod-simple-follow-page__attention-btn" 
+		onclick="tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>''<<param.gw_temp_auth_token>>')">一键打开微信连Wi-Fi</a>
+	<a class="mod-simple-follow-page__attention-btn" onclick="pcAuth()">PC连Wi-Fi</a>
 </body>
 <script type="text/javascript">
 	document.addEventListener('visibilitychange', putNoResponse, false);
