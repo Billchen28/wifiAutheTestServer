@@ -644,7 +644,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_ssid>>", ssid);
 		String authUrl = "http://192.168.144.1:2060/wifidog/wx_auth";
 		responseContent = responseContent.replaceAll("<<param.weixin.auth_url>>",authUrl);
-		String pcAuthUrl = "http://192.168.144.128:8000/ewifi/wxpcauth/";
+		String pcAuthUrl = "http://www.floatyun.com:8000/ewifi/wxpcauth/";
 		responseContent = responseContent.replaceAll("<<param.weixin.pc_auth_url>>",pcAuthUrl);
 		String tempAuthUrl = "http://192.168.144.1:2060/wifidog/wx_tmp_auth";
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
