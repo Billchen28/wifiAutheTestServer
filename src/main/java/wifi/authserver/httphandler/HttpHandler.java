@@ -597,7 +597,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	 * return login page,if user & password is error.return error tips!
 	 * */
 	private HttpResponse returnLoginPage(ChannelHandlerContext ctx, QueryStringDecoder content,String tips) {
-		testSign();
 		HttpResponse response;
 		String responseContent = ReadAll.readAll("web/login.html", "utf-8");
 		responseContent = responseContent.replaceAll("<<param.gw_address>>",HttpParameterHelper.getParameters(content, "gw_address"));
@@ -617,9 +616,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		String timestamp = String.valueOf(System.currentTimeMillis());
 		responseContent = responseContent.replaceAll("<<param.weixin.timestamp>>",timestamp);
 		String sign = "";
-		String appId = "xxx";
-		String shopId = "xxxx";
-		String secretKey = "xxxx";
+		String appId = "wx510676585e2b8e83";
+		String shopId = "5666808";
+		String secretKey = "22efc8256df4ae501baa9eae6a02111a";
 		String signSrc = appId + extend + timestamp + shopId + authUrl + mac + ssid + gw_mac + secretKey;
 		sign = getMD5(signSrc.getBytes());
 		responseContent = responseContent.replaceAll("<<param.weixin.sign>>",sign);
