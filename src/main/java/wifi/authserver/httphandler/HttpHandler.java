@@ -13,7 +13,6 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_A
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -48,6 +47,7 @@ import wifi.authserver.dao.obj.User;
 import wifi.authserver.httphandler.cache.DeviceCache;
 import wifi.authserver.httphandler.cache.KeepAliver;
 import wifi.authserver.httphandler.cache.KeepAliver.OnlineUser;
+import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
@@ -58,9 +58,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		LogHelper.info("got get request "+path);
 		if(path.equals("/ewifi/ping/")){
 			response = parsePing(ctx, decoder);
-		}else if(path.equals("/ewifi/auth/")){
+		} else if(path.equals("/ewifi/auth/")){
 			response = parseAuth(ctx, decoder);
-		}else if(path.equals("/ewifi/login/")){
+		} else if(path.equals("/ewifi/login/")){
 			response = parseLogin(ctx, decoder);
 		}else if(path.equals("/ewifi/portal/")){
 			response = parsePortal(ctx, decoder);
@@ -68,7 +68,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response = parseRegedit(ctx, decoder);
 		}else if(path.equals("/ewifi/querymac/")){
 			response = parseQuery(ctx, decoder);
-		}else{
+		} else if (path.equals("/ewifi/wxpcauth/")) {
+			response = parseWxpcauth(ctx, decoder);
+		} else{
 			response = parseStatic(ctx, decoder);
 		}
 
@@ -135,13 +137,13 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		boolean isT = KeepAliver.getInstance().updateLog(content);
 		boolean keepOnline = false;
 		String token = HttpParameterHelper.getParameters(content, "token");
+		String ip = HttpParameterHelper.getParameters(content, "ip");
 		String authTypeStr = HttpParameterHelper.getParameters(content, "auth_type");
 		if (authTypeStr != null) {
 			LogHelper.info("authTypeStr:" + authTypeStr);	
 		} else {
 			LogHelper.info("authTypeStr:null");
 		}
-		
 		final int NORMAL_AUTH = 0x00;
 		final int WX_TMP_AUTH = 0x01;
 		final int WX_AUTH = 0x02;
@@ -158,6 +160,14 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		} else if (auth_type == WX_AUTH) {
 			LogHelper.info("WX_AUTH allow.");
 			keepOnline = true;
+		}
+		WxPConlinerUser wxpcuser = KeepAliver.getInstance().getWxPcUser(ip);
+		if (wxpcuser != null) {
+			if ((System.currentTimeMillis() - wxpcuser.mLoginTime) > 60 * 60 * 1000) {
+				keepOnline = false;
+			} else {
+				keepOnline = true;
+			}
 		}
 		if(!keepOnline && isT){
 			if (!keepOnline && token != null && token.length() > 0) {
@@ -189,6 +199,21 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			return response;
 		}
 		response = sendPrepare(ctx,key);
+		return response;
+	}
+	
+	private HttpResponse parseWxpcauth(ChannelHandlerContext ctx, QueryStringDecoder content) {
+		HttpResponse response = null;
+		String extend = HttpParameterHelper.getParameters(content, "extend");
+		String tid = HttpParameterHelper.getParameters(content, "tid");
+		String openId = HttpParameterHelper.getParameters(content, "openId");
+		WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
+		if (user != null) {
+			KeepAliver.getInstance().updateWxPcUserLoginTime(extend);
+		} else {
+			KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
+		}
+		sendPrepare(ctx,"Auth: 0\nMessages: no");
 		return response;
 	}
 	
@@ -615,6 +640,8 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_ssid>>", ssid);
 		String authUrl = "http://192.168.144.1:2060/wifidog/wx_auth";
 		responseContent = responseContent.replaceAll("<<param.weixin.auth_url>>",authUrl);
+		String pcAuthUrl = "http://www.floatyun.com:8000/ewifi/wxpcauth/";
+		responseContent = responseContent.replaceAll("<<param.weixin.pc_auth_url>>",pcAuthUrl);
 		String tempAuthUrl = "http://192.168.144.1:2060/wifidog/wx_tmp_auth";
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
 		String tempAuthToken = "tempAuthToken";

@@ -38,7 +38,16 @@ public class KeepAliver implements Runnable {
 		public String mUserName;
 	}
 	
+	public class WxPConlinerUser {
+		public long mLoginTime = 0l;
+		public String tid;
+		public String openId;
+		public String mIp;
+	}
+	
 	private HashMap<String, OnlineUser> mOnlineClients = new HashMap<String, KeepAliver.OnlineUser>();
+	
+	private HashMap<String, WxPConlinerUser> mWxPConlinerUsers = new HashMap<String, KeepAliver.WxPConlinerUser>();
 
 	private KeepAliver() {
 	}
@@ -226,11 +235,34 @@ public class KeepAliver implements Runnable {
 		mOnlineClients.put(token, user);
 	}
 	
+	public void addWxPcOnlineUser(String ip, String tid, String openId) {
+		WxPConlinerUser user = new WxPConlinerUser();
+		user.mLoginTime = System.currentTimeMillis();
+		user.mIp = ip;
+		user.tid = tid;
+		user.openId = openId;
+		mWxPConlinerUsers.put(ip, user);
+	}
+	
+	public void updateWxPcUserLoginTime(String ip) {
+		WxPConlinerUser user = mWxPConlinerUsers.get(ip);
+		if (user != null) {
+			user.mLoginTime = System.currentTimeMillis();
+		}
+	}
+	
 	public void updateOnlineUserLoginTime(String token) {
 		OnlineUser user = mOnlineClients.get(token);
 		if (user != null) {
 			user.mLoginTime = System.currentTimeMillis();
 		}
+	}
+	
+	public WxPConlinerUser getWxPcUser(String ip) {
+		if (ip == null) {
+			return null;
+		}
+		return mWxPConlinerUsers.get(ip);
 	}
 	
 	public OnlineUser getOnlineUser(String token) {

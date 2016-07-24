@@ -25,25 +25,14 @@
 	<script type="text/javascript">
 		//注册回调函数
 		function jsonpTmpAuthCallback(result){
-			if (clickPc) {
-				alert(`jsonpTmpAuthCallback clickPc`);
-				JSAPI.auth({
-			    	target : document.getElementById('qrcode_zone'),
-			        appId : 'wx510676585e2b8e83',
-			        shopId : 5666808,
-			        extend : '<<param.weixin.extend>>',
-			        //authUrl : 'http://wifi.weixin.qq.com/mbl/default.xhtml'
-			        authUrl : 'http://wximg.qq.com/tmt/wifi-landing-pc/dist/html/index-success.html'
-			    });
-				clickPc = 0;
-			} else {
+			
 				if(result && result.success){
 			//		alert('tmp auth success');
 					Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', '<<param.weixin.auth_url>>', '<<param.client_mac>>', '<<param.gw_ssid>>', '<<param.gw_mac>>');
 				}else if(result && !result.success){
 					alert(`tmp auth fail.`);
 				}
-			}
+			
 		}
 	</script>
 	</head>
@@ -113,6 +102,13 @@
 </body>
 <script type="text/javascript">
 	document.addEventListener('visibilitychange', putNoResponse, false);
+	JSAPI.auth({
+    	target : document.getElementById('qrcode_zone'),
+        appId : 'wx510676585e2b8e83',
+        shopId : 5666808,
+        extend : '<<param.weixin.extend>>',
+        authUrl : '<<param.weixin.pc_auth_url>>'
+    });
 </script>
 
 </html>
