@@ -619,11 +619,11 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
 		String tempAuthToken = "tempAuthToken";
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_token>>",tempAuthToken);
-		String extend = "default_extend.";
-		try {
-			extend = URLEncoder.encode("ip=" + ip + "&mac=" + mac, "UTF-8");
-		} catch (Exception e) {
-		}
+		String extend = ip;//"default_extend.";
+//		try {
+//			extend = URLEncoder.encode("ip=" + ip + "&mac=" + mac, "UTF-8");
+//		} catch (Exception e) {
+//		}
 		responseContent = responseContent.replaceAll("<<param.weixin.extend>>",extend);
 		String timestamp = String.valueOf(System.currentTimeMillis());
 		responseContent = responseContent.replaceAll("<<param.weixin.timestamp>>",timestamp);
