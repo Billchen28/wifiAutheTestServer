@@ -599,9 +599,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 	private HttpResponse returnLoginPage(ChannelHandlerContext ctx, QueryStringDecoder content,String tips) {
 		HttpResponse response;
 		String responseContent = ReadAll.readAll("web/login.html", "utf-8");
+
 		responseContent = responseContent.replaceAll("<<param.gw_address>>",HttpParameterHelper.getParameters(content, "gw_address"));
 		responseContent = responseContent.replaceAll("<<param.gw_port>>",HttpParameterHelper.getParameters(content, "gw_port"));
 		responseContent = responseContent.replaceAll("<<param.gw_id>>",HttpParameterHelper.getParameters(content, "gw_id"));
+		String ip = HttpParameterHelper.getParameters(content, "ip");
+		responseContent = responseContent.replaceAll("<<param.client_ip>>",ip);
 		String mac = HttpParameterHelper.getParameters(content, "mac");
 		responseContent = responseContent.replaceAll("<<param.client_mac>>",mac);
 		responseContent = responseContent.replaceAll("<<param.url>>",HttpParameterHelper.getParameters(content, "url"));
@@ -611,6 +614,10 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_ssid>>", ssid);
 		String authUrl = "http://192.168.144.1:2060/wifidog/wx_auth";
 		responseContent = responseContent.replaceAll("<<param.weixin.auth_url>>",authUrl);
+		String tempAuthUrl = "http://192.168.144.1:2060/wifidog/wx_tmp_auth";
+		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
+		String tempAuthToken = "tempAuthToken";
+		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_token>>",tempAuthToken);
 		String extend = "extend_msg_for_wifi_dog";
 		responseContent = responseContent.replaceAll("<<param.weixin.extend>>",extend);
 		String timestamp = String.valueOf(System.currentTimeMillis());
