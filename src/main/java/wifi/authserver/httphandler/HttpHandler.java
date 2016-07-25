@@ -53,7 +53,6 @@ import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
-		request.
 		String src_url = request.getUri();
 		QueryStringDecoder decoder = new QueryStringDecoder(src_url);
 		String path = decoder.getPath();
