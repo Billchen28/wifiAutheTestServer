@@ -257,7 +257,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			extend = URLEncoder.encode(extend, "UTF-8");
 		} catch (Exception e) {
 		}
-		String authUrl= "http://192.168.144.1:2060"+"/wifidog/auth?token=wifiMgrtmptoken";
+		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
 		try {
 			authUrl = URLEncoder.encode(authUrl, "UTF-8");
 		} catch (Exception e) {
