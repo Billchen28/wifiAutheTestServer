@@ -64,7 +64,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response = parseAuth(ctx, decoder);
 		} else if(path.equals("/ewifi/login/")){
 			String ua = request.getHeader("User-Agent");
-			if (ua != null && ua.contains("wifimanager")) {
+			if (ua != null && ua.contains("wifimanager_s")) {
 				response = parseWifiMgrLogin(ctx, decoder, src_url);
 			} else {
 				response = parseLogin(ctx, decoder);
