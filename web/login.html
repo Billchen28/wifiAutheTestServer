@@ -40,13 +40,18 @@
 <h1>
 欢迎使用风云极速WiFi
 </h1>
-	<form id="userlogin" method="post" action="/ewifi/loginValidate/">
+	<div class="tmall_border">
+		<a href="/ewifi/apk/tencentwifimanager_2.0.0.1402_android_20160719115844-reunion-release_wifi_110012.apk" target="_blank" title="下载WiFi管家安装包">
+			<i><img src="/ewifi/img/wifi_mgr_logo.png" width="28" alt="下载WiFi管家安装包"></i><span>下载WiFi管家安装包</span>
+		</a>
+	</div>
+	<a class="mod-simple-follow-page__attention-btn" 
+		onclick="tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');">一键打开微信连Wi-Fi</a><br>
+
+	<div class="main__content-qrcode" id='qrcode_zone' style="text-align:center;margin:20px auto;width:250px;"></div>
+    <div class="main__content-info">使用微信扫描二维码</div>
+    <form id="userlogin" method="post" action="/ewifi/loginValidate/">
 		<div class="tmall_demo">
-			<div class="tmall_border">
-				<a href="/ewifi/apk/tencentwifimanager_2.0.0.1402_android_20160719115844-reunion-release_wifi_110012.apk" target="_blank" title="下载WiFi管家安装包">
-					<i><img src="/ewifi/img/wifi_mgr_logo.png" width="28" alt="下载WiFi管家安装包"></i><span>下载WiFi管家安装包</span>
-				</a>
-			</div>
 			<div class="div_del mobileverify">
 				
 				<div class="tmall_border">
@@ -83,22 +88,6 @@
 		</div>
 		</div>
 	</form>
-	<form  method="get" action="#">
-		<div class="mt5">
-			<input id="submithandle" type="submit" class="into_btn verifySubmitHandler" value="WiFi管家一键连接（开发中）"></div>
-		</div>
-		</div>
-	</form>
-	<a class="mod-simple-follow-page__attention-btn" 
-		onclick="tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');">一键打开微信连Wi-Fi</a><br>
-
-	<div class="main__content-qrcode" id='qrcode_zone' style="text-align:center;margin:20px auto;width:250px;"></div>
-    <div class="main__content-info">使用微信扫描二维码</div>
-
-
-	<a class="mod-simple-follow-page__attention-btn" 
-		onclick="pcAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');">PC微信连Wi-Fi</a>
-
 </body>
 <script type="text/javascript">
 	document.addEventListener('visibilitychange', putNoResponse, false);
