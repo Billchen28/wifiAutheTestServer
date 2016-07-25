@@ -13,6 +13,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_A
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -52,7 +53,8 @@ import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
-		QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
+		String src_url = request.getUri();
+		QueryStringDecoder decoder = new QueryStringDecoder(src_url);
 		String path = decoder.getPath();
 		HttpResponse response = null;;
 		LogHelper.info("got get request "+path);
@@ -61,7 +63,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		} else if(path.equals("/ewifi/auth/")){
 			response = parseAuth(ctx, decoder);
 		} else if(path.equals("/ewifi/login/")){
-			response = parseLogin(ctx, decoder);
+			String ua = request.getHeader("User-Agent");
+			if (ua != null && ua.contains("wifimanager")) {
+				response = parseWifiMgrLogin(ctx, decoder, src_url);
+			} else {
+				response = parseLogin(ctx, decoder);
+			}
 		}else if(path.equals("/ewifi/portal/")){
 			response = parsePortal(ctx, decoder);
 		}else if(path.equals("/ewifi/regedit/")){
@@ -70,15 +77,15 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response = parseQuery(ctx, decoder);
 		} else if (path.equals("/ewifi/wxpcauth/")) {
 			response = parseWxpcauth(ctx, decoder);
+		} else if (path.equals("/ewifi/wifimgrauth/")) {
+			response = parsewifimgrauth(ctx, decoder);
 		} else{
 			response = parseStatic(ctx, decoder);
 		}
-
 		Channel ch = e.getChannel();
 		if (ch.isConnected()) {
 			ch.write(response).addListener(ChannelFutureListener.CLOSE);
 		}
-
 	}
 	
 	private void parsePost(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
@@ -202,6 +209,25 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		return response;
 	}
 	
+	private HttpResponse parsewifimgrauth(ChannelHandlerContext ctx, QueryStringDecoder content) {
+		HttpResponse response = null;
+		String extend = HttpParameterHelper.getParameters(content, "extend");
+		String tid = HttpParameterHelper.getParameters(content, "tid");
+		String openId = HttpParameterHelper.getParameters(content, "openId");
+		WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
+		if (user != null) {
+			KeepAliver.getInstance().updateWxPcUserLoginTime(extend);
+		} else {
+			KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
+		}
+		String redirectUrl="http://www.floatyun.com:8000/ewifi/wifimgrauth/";
+		response = sendPrepare(ctx, "");
+		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
+		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
+		LogHelper.info("redirectUrl is  : "+redirectUrl);
+		return response;
+	}
+	
 	private HttpResponse parseWxpcauth(ChannelHandlerContext ctx, QueryStringDecoder content) {
 		HttpResponse response = null;
 		String extend = HttpParameterHelper.getParameters(content, "extend");
@@ -214,6 +240,30 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
 		}
 		String redirectUrl="http://192.168.144.1:2060"+"/wifidog/auth?token=wxpctmptoken";
+		response = sendPrepare(ctx, "");
+		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
+		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
+		LogHelper.info("redirectUrl is  : "+redirectUrl);
+		return response;
+	}
+	
+	private HttpResponse parseWifiMgrLogin(ChannelHandlerContext ctx, QueryStringDecoder content, String src_url) {
+		String ip = HttpParameterHelper.getParameters(content, "ip");
+		String extend = "";
+		if (ip != null) {
+			extend = ip;
+		}
+		try {
+			extend = URLEncoder.encode(extend, "UTF-8");
+		} catch (Exception e) {
+		}
+		String authUrl= "http://192.168.144.1:2060"+"/wifidog/auth?token=wifiMgrtmptoken";
+		try {
+			authUrl = URLEncoder.encode(authUrl, "UTF-8");
+		} catch (Exception e) {
+		}
+		String redirectUrl = src_url + "&authUrl=" + authUrl + "&extend=" + extend;
+		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
 		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
@@ -609,7 +659,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		response.addHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
 		StringBuilder builder = new StringBuilder();
 		builder.append(body);
-
 		response.setContent(ChannelBuffers.copiedBuffer(builder.toString(), CharsetUtil.UTF_8));
 		return response;
 	}
