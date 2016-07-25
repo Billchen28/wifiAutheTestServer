@@ -53,6 +53,7 @@ import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
+		request.
 		String src_url = request.getUri();
 		QueryStringDecoder decoder = new QueryStringDecoder(src_url);
 		String path = decoder.getPath();
@@ -262,7 +263,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			authUrl = URLEncoder.encode(authUrl, "UTF-8");
 		} catch (Exception e) {
 		}
-		String redirectUrl = src_url + "&authUrl=" + authUrl + "&extend=" + extend;
+		String redirectUrl = "http://www.floatyun.com:8000/" + src_url + "&authUrl=" + authUrl + "&extend=" + extend;
 		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
