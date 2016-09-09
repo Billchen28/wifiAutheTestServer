@@ -79,7 +79,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			response = parseWxpcauth(ctx, decoder);
 		} else if (path.equals("/ewifi/wifimgrauth/")) {
 			response = parsewifimgrauth(ctx, decoder);
-		} else{
+		} else if (path.equals("/ewifi/q_auth/")) {
+			response = parseQAuth(ctx, decoder);
+		} else {
 			response = parseStatic(ctx, decoder);
 		}
 		Channel ch = e.getChannel();
@@ -228,6 +230,30 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		return response;
 	}
 	
+	private HttpResponse parseQAuth(ChannelHandlerContext ctx, QueryStringDecoder content) {
+		String ip = HttpParameterHelper.getParameters(content, "ip");
+		String extend = "";
+		if (ip != null) {
+			extend = ip;
+		}
+		try {
+			extend = URLEncoder.encode(extend, "UTF-8");
+		} catch (Exception e) {
+		}
+		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
+		try {
+			authUrl = URLEncoder.encode(authUrl, "UTF-8");
+		} catch (Exception e) {
+		}
+		String redirectUrl = authUrl + "&extend=" + extend;
+		HttpResponse response = null;
+		response = sendPrepare(ctx, "");
+		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
+		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
+		LogHelper.info("redirectUrl is  : "+redirectUrl);
+		return response;
+	}
+	
 	private HttpResponse parseWxpcauth(ChannelHandlerContext ctx, QueryStringDecoder content) {
 		HttpResponse response = null;
 		String extend = HttpParameterHelper.getParameters(content, "extend");
@@ -257,12 +283,13 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			extend = URLEncoder.encode(extend, "UTF-8");
 		} catch (Exception e) {
 		}
-		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
+//		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
+		String authUrl= "http://www.floatyun.com:8000/ewifi/q_auth/?token=wifiMgrtmptoken&ip=" + ip;
 		try {
 			authUrl = URLEncoder.encode(authUrl, "UTF-8");
 		} catch (Exception e) {
 		}
-		String redirectUrl = "http://www.floatyun.com:8000" + src_url + "&authUrl=" + authUrl + "&extend=" + extend;
+		String redirectUrl = "http://www.floatyun.com:8000/ewifi/portal/"  + "&authUrl=" + authUrl + "&extend=" + extend;
 		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
