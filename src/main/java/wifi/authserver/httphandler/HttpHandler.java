@@ -5,6 +5,7 @@
  */
 package wifi.authserver.httphandler;
 
+
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
 import static org.jboss.netty.handler.codec.http.HttpMethod.POST;
@@ -13,6 +14,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_A
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -51,6 +53,9 @@ import wifi.authserver.httphandler.cache.KeepAliver.OnlineUser;
 import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
+	
+	public static final String AUTH_SERVER = "http://192.168.144.129:8000";
+//	public static final String AUTH_SERVER = "http://www.floatyun.com:8000";
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
 		String src_url = request.getUri();
@@ -222,7 +227,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		} else {
 			KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
 		}
-		String redirectUrl="http://www.floatyun.com:8000/ewifi/wifimgrauth/";
+		String redirectUrl= AUTH_SERVER + "/ewifi/wifimgrauth/";
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
 		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
@@ -237,6 +242,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			extend = ip;
 		}
                 String tid = HttpParameterHelper.getParameters(content, "tid");
+                if (tid != null && tid.length() > 0) {
+                	try {
+						tid = URLEncoder.encode(tid, "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+					}
+                }
                 String openId = HttpParameterHelper.getParameters(content, "openId");
                 WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
                 if (user != null) {
@@ -282,12 +293,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		} catch (Exception e) {
 		}
 //		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
-		String authUrl= "http://www.floatyun.com:8000/ewifi/q_auth/?token=wifiMgrtmptoken&ip=" + ip;
+		String authUrl= AUTH_SERVER + "/ewifi/q_auth/?token=wifiMgrtmptoken&ip=" + ip;
 		try {
 			authUrl = URLEncoder.encode(authUrl, "UTF-8");
 		} catch (Exception e) {
 		}
-		String redirectUrl = "http://www.floatyun.com:8000/ewifi/portal/"  + "?authUrl=" + authUrl + "&extend=" + extend;
+		String redirectUrl = AUTH_SERVER + "/ewifi/portal/"  + "?authUrl=" + authUrl + "&extend=" + extend;
 		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
@@ -718,7 +729,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		responseContent = responseContent.replaceAll("<<param.gw_ssid>>", ssid);
 		String authUrl = "http://192.168.144.1:2060/wifidog/wx_auth";
 		responseContent = responseContent.replaceAll("<<param.weixin.auth_url>>",authUrl);
-		String pcAuthUrl = "http://www.floatyun.com:8000/ewifi/wxpcauth/";
+		String pcAuthUrl = AUTH_SERVER + "/ewifi/wxpcauth/";
 		responseContent = responseContent.replaceAll("<<param.weixin.pc_auth_url>>",pcAuthUrl);
 		String tempAuthUrl = "http://192.168.144.1:2060/wifidog/wx_tmp_auth";
 		responseContent = responseContent.replaceAll("<<param.gw_temp_auth_url>>",tempAuthUrl);
