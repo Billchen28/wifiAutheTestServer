@@ -236,16 +236,20 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		if (ip != null) {
 			extend = ip;
 		}
-		try {
-			extend = URLEncoder.encode(extend, "UTF-8");
-		} catch (Exception e) {
-		}
+                String tid = HttpParameterHelper.getParameters(content, "tid");
+                String openId = HttpParameterHelper.getParameters(content, "openId");
+                WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
+                if (user != null) {
+                        KeepAliver.getInstance().updateWxPcUserLoginTime(extend);
+                } else {
+                        KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
+                }
 		String authUrl= "http://192.168.144.1:2060"+"/wifidog/wx_auth?token=wifiMgrtmptoken";
-		try {
-			authUrl = URLEncoder.encode(authUrl, "UTF-8");
-		} catch (Exception e) {
-		}
-		String redirectUrl = authUrl + "&extend=" + extend;
+//		try {
+//			authUrl = URLEncoder.encode(authUrl, "UTF-8");
+//		} catch (Exception e) {
+//		}
+		String redirectUrl = authUrl + "&extend=" + extend + "&tid=" + tid + "&openId=" + openId;
 		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
@@ -259,12 +263,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		String extend = HttpParameterHelper.getParameters(content, "extend");
 		String tid = HttpParameterHelper.getParameters(content, "tid");
 		String openId = HttpParameterHelper.getParameters(content, "openId");
-		WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
-		if (user != null) {
-			KeepAliver.getInstance().updateWxPcUserLoginTime(extend);
-		} else {
-			KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
-		}
 		String redirectUrl="http://192.168.144.1:2060"+"/wifidog/auth?token=wxpctmptoken";
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
@@ -289,7 +287,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			authUrl = URLEncoder.encode(authUrl, "UTF-8");
 		} catch (Exception e) {
 		}
-		String redirectUrl = "http://www.floatyun.com:8000/ewifi/portal/"  + "&authUrl=" + authUrl + "&extend=" + extend;
+		String redirectUrl = "http://www.floatyun.com:8000/ewifi/portal/"  + "?authUrl=" + authUrl + "&extend=" + extend;
 		HttpResponse response = null;
 		response = sendPrepare(ctx, "");
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
