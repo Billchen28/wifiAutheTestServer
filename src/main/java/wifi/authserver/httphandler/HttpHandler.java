@@ -54,8 +54,8 @@ import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
-	public static final String AUTH_SERVER = "http://192.168.144.129:8000";
-//	public static final String AUTH_SERVER = "http://www.floatyun.com:8000";
+//	public static final String AUTH_SERVER = "http://192.168.144.129:8000";
+	public static final String AUTH_SERVER = "http://www.floatyun.com:8000";
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
 		String src_url = request.getUri();
