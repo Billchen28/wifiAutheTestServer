@@ -54,7 +54,7 @@ import wifi.authserver.httphandler.cache.KeepAliver.WxPConlinerUser;
 
 public class HttpHandler extends SimpleChannelUpstreamHandler {
 	
-//	public static final String AUTH_SERVER = "http://192.168.144.129:8000";
+//	public static final String AUTH_SERVER = "http://192.168.144.128:8000";
 	public static final String AUTH_SERVER = "http://www.floatyun.com:8000";
 	
 	private void parseGet(ChannelHandlerContext ctx, MessageEvent e, HttpRequest request)  {
@@ -279,6 +279,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		response.setStatus(HttpResponseStatus.TEMPORARY_REDIRECT);
 		response.addHeader(HttpHeaders.Names.LOCATION, redirectUrl);
 		LogHelper.info("redirectUrl is  : "+redirectUrl);
+		WxPConlinerUser user = KeepAliver.getInstance().getWxPcUser(extend);
+        if (user != null) {
+        	KeepAliver.getInstance().updateWxPcUserLoginTime(extend);
+        } else {
+        	KeepAliver.getInstance().addWxPcOnlineUser(extend, tid, openId);
+        }
 		return response;
 	}
 	
