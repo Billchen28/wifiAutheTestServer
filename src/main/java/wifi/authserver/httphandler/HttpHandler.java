@@ -747,7 +747,8 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 //		} catch (Exception e) {
 //		}
 		responseContent = responseContent.replaceAll("<<param.weixin.extend>>",extend);
-		String timestamp = String.valueOf(System.currentTimeMillis());
+//		String timestamp = String.valueOf(System.currentTimeMillis());
+		String timestamp = String.valueOf(1480423398702L);
 		responseContent = responseContent.replaceAll("<<param.weixin.timestamp>>",timestamp);
 		String sign = "";
 		String appId = "wx510676585e2b8e83";
