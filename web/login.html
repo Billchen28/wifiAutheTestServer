@@ -17,6 +17,7 @@
 	<script type="text/javascript" src="/ewifi/js/wechatutil.js" ></script>
 	<script type="text/javascript" src="/ewifi/js/pcauth.js" ></script>
 	<script type="text/javascript">
+		var g_need_jump_wechat = true;
 		function submitform(){
 			document.getElementById("password").value=hex_md5(document.getElementById("password").value);
 			document.getElementById("userlogin").submit();
@@ -25,7 +26,10 @@
 	<script type="text/javascript">
 		//注册回调函数
 		function jsonpTmpAuthCallback(result){
-			
+			if (!g_need_jump_wechat) {
+				g_need_jump_wechat = true;
+				return;
+			}
 				if(result && result.success){
 			//		alert('tmp auth success');
 					Wechat_GotoRedirect('wx510676585e2b8e83', '<<param.weixin.extend>>', '<<param.weixin.timestamp>>', '<<param.weixin.sign>>', '5666808', '<<param.weixin.auth_url>>', '<<param.client_mac>>', '<<param.gw_ssid>>', '<<param.gw_mac>>');
@@ -105,6 +109,7 @@
         authUrl : '<<param.weixin.pc_auth_url>>'
     });
     function temp_auth() {
+    	g_need_jump_wechat = false;
     	alert('iOS, req tmpAuth.');
 		tmpAuth('<<param.gw_temp_auth_url>>', '<<param.client_ip>>', '<<param.client_mac>>','<<param.gw_temp_auth_token>>');
 	}
